@@ -1,21 +1,22 @@
-(() => {
-    function trouverAnnonces() {
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.type === "VINTED_SCAN") {
         const liens = document.querySelectorAll('a[href*="/items/"]');
         const annonces = [];
+        const dejaVues = new Set();
 
         liens.forEach(lien => {
             const url = lien.href;
 
             if (!url.includes("vinted.fr/items/")) return;
+            if (dejaVues.has(url)) return;
+
+            dejaVues.add(url);
 
             const bloc = lien.closest("div");
-
             if (!bloc) return;
 
             const texte = bloc.innerText || "";
-
             const prix = texte.match(/\d+(?:[,.]\d{1,2})?\s*€/);
-
             const image = bloc.querySelector("img");
 
             annonces.push({
@@ -26,17 +27,8 @@
             });
         });
 
-        return annonces;
+        sendResponse({ annonces });
     }
 
-    window.addEventListener("message", event => {
-        if (event.data?.type === "VINTED_SCAN") {
-            const annonces = trouverAnnonces();
-
-            window.postMessage({
-                type: "VINTED_SCAN_RESULT",
-                annonces
-            }, "*");
-        }
-    });
-})();
+    return true;
+});
