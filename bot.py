@@ -117,16 +117,15 @@ async def on_ready():
         guild_id = int(os.getenv("DISCORD_GUILD_ID"))
         guild = discord.Object(id=guild_id)
 
-        # Copier les commandes sur le serveur
-        bot.tree.copy_global_to(guild=guild)
+        # Supprimer les commandes propres au serveur
+        bot.tree.clear_commands(guild=guild)
         await bot.tree.sync(guild=guild)
 
-        # Supprimer les commandes globales
-        bot.tree.clear_commands(guild=None)
+        # Synchroniser les commandes globales
         await bot.tree.sync()
 
         commandes_synchronisees = True
-        print("Commandes synchronisées sur le serveur uniquement !")
+        print("Synchronisation terminée !")
 
     if reception_runner is None:
         reception_runner = await demarrer_reception(bot)
