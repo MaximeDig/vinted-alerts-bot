@@ -235,6 +235,8 @@ async def generer_cle(interaction: discord.Interaction):
         f"Voici ta nouvelle clé personnelle :\n`{cle}`\n"
         "Conserve-la en lieu sûr. Elle ne sera plus affichée.",
         ephemeral=True
+
+        
     )
 @bot.tree.command(
     name="installer",
