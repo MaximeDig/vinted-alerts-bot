@@ -7,7 +7,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         liens.forEach(lien => {
             const url = lien.href;
 
-            if (!url.includes("vinted.fr/items/")) return;
+            if (!/^https:\/\/www\.vinted\.(fr|be|de|es|it|pt|lu)\/items\//.test(url)) return;
             if (dejaVues.has(url)) return;
 
             dejaVues.add(url);
