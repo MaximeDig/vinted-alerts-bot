@@ -4,6 +4,7 @@ import sqlite3
 import discord
 from discord.ext import commands
 from discord import app_commands
+from reception import demarrer_reception
 
 # Le token sera ajouté dans les variables d'environnement Railway.
 TOKEN = os.getenv("DISCORD_TOKEN")
@@ -106,15 +107,19 @@ async def trouver_salon(guild, nom):
 
 
 commandes_synchronisees = False
+reception_runner = None
 
 @bot.event
 async def on_ready():
-    global commandes_synchronisees
+    global commandes_synchronisees, reception_runner
 
     if not commandes_synchronisees:
         await bot.tree.sync()
         commandes_synchronisees = True
         print("Commandes Discord synchronisées !")
+
+    if reception_runner is None:
+        reception_runner = await demarrer_reception(bot)
 
     print(f"Vinted Bot connecté : {bot.user}")
 
