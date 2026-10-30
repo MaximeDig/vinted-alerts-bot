@@ -41,7 +41,15 @@ document.getElementById("scanner").addEventListener("click", async () => {
                 lien.target = "_blank";
                 lien.rel = "noopener noreferrer";
 
-                bloc.append(titre, prix, lien);
+                if (annonce.image) {
+    const photo = document.createElement("img");
+    photo.src = annonce.image;
+    photo.alt = "Photo de l'annonce";
+    photo.width = 120;
+    bloc.appendChild(photo);
+}
+
+bloc.append(titre, prix, lien);
                 resultats.appendChild(bloc);
             });
         }
