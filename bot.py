@@ -114,22 +114,20 @@ async def on_ready():
     global commandes_synchronisees, reception_runner
 
     if not commandes_synchronisees:
-        bot.tree.clear_commands(guild=None)
-        await bot.tree.sync()
-
         guild_id = int(os.getenv("DISCORD_GUILD_ID"))
         guild = discord.Object(id=guild_id)
 
+        # Copier les commandes sur le serveur
         bot.tree.copy_global_to(guild=guild)
         await bot.tree.sync(guild=guild)
 
+        # Supprimer les commandes globales
+        bot.tree.clear_commands(guild=None)
+        await bot.tree.sync()
+
         commandes_synchronisees = True
-        print("Commandes du serveur synchronisées !")
+        print("Commandes synchronisées sur le serveur uniquement !")
 
-    if reception_runner is None:
-        reception_runner = await demarrer_reception(bot)
-
-    print(f"Vinted Bot connecté : {bot.user}")
     if reception_runner is None:
         reception_runner = await demarrer_reception(bot)
 
