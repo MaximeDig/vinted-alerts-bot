@@ -193,47 +193,6 @@ async def configurer_client(
         f"Configuration enregistrée ! Les annonces seront envoyées dans {salon.mention}.",
         ephemeral=True
     )
-    @bot.tree.command(
-    name="generer_cle",
-    description="Générer une clé d'accès personnelle"
-)
-@app_commands.checks.has_permissions(manage_guild=True)
-async def generer_cle(interaction: discord.Interaction):
-
-    if interaction.guild is None:
-        await interaction.response.send_message(
-            "Utilise cette commande sur un serveur.",
-            ephemeral=True
-        )
-        return
-
-    cle = secrets.token_urlsafe(32)
-    empreinte = hashlib.sha256(
-        cle.encode("utf-8")
-    ).hexdigest()
-
-    db.execute("""
-        INSERT INTO clients (
-            guild_id, owner_id, token_hash, actif
-        )
-        VALUES (?, ?, ?, 1)
-        ON CONFLICT(guild_id) DO UPDATE SET
-            owner_id = excluded.owner_id,
-            token_hash = excluded.token_hash,
-            actif = 1
-    """, (
-        str(interaction.guild.id),
-        str(interaction.user.id),
-        empreinte
-    ))
-
-    db.commit()
-
-    await interaction.response.send_message(
-        f"Voici ta nouvelle clé personnelle :\n`{cle}`\n"
-        "Conserve-la en lieu sûr. Elle ne sera plus affichée.",
-        ephemeral=True
-    )
 @bot.tree.command(
     name="installer",
     description="Créer les catégories et salons Vinted"
