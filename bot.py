@@ -48,7 +48,17 @@ CREATE TABLE IF NOT EXISTS clients (
     actif INTEGER DEFAULT 1
 )
 """)
+colonnes = {
+    ligne[1]
+    for ligne in db.execute(
+        "PRAGMA table_info(clients)"
+    ).fetchall()
+}
 
+if "token_hash" not in colonnes:
+    db.execute(
+        "ALTER TABLE clients ADD COLUMN token_hash TEXT"
+    )
 db.commit()
 
 # Configuration Discord
