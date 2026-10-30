@@ -136,7 +136,7 @@ reception_runner = None
 async def on_ready():
     global commandes_synchronisees, reception_runner
 
-        if not commandes_synchronisees:
+    if not commandes_synchronisees:
         await bot.tree.sync()
         commandes_synchronisees = True
         print("Synchronisation globale terminée !")
