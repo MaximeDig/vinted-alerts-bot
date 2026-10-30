@@ -5,7 +5,13 @@
   "description": "Repère les annonces Vinted.",
   "permissions": ["activeTab"],
   "host_permissions": [
-    "https://www.vinted.fr/*"
+    "https://www.vinted.fr/*",
+    "https://www.vinted.be/*",
+    "https://www.vinted.de/*",
+    "https://www.vinted.es/*",
+    "https://www.vinted.it/*",
+    "https://www.vinted.pt/*",
+    "https://www.vinted.lu/*"
   ],
   "action": {
     "default_popup": "popup.html"
@@ -13,7 +19,13 @@
   "content_scripts": [
     {
       "matches": [
-        "https://www.vinted.fr/*"
+        "https://www.vinted.fr/*",
+        "https://www.vinted.be/*",
+        "https://www.vinted.de/*",
+        "https://www.vinted.es/*",
+        "https://www.vinted.it/*",
+        "https://www.vinted.pt/*",
+        "https://www.vinted.lu/*"
       ],
       "js": ["content.js"],
       "run_at": "document_idle"
