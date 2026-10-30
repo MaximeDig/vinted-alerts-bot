@@ -491,41 +491,4 @@ async def on_raw_reaction_add(payload):
     print(f"Évaluation enregistrée : {emoji}")
 
 
-@bot.tree.command(
-    name="tester_reception",
-    description="Tester la réception d'une annonce fictive"
-)
-async def tester_reception(interaction: discord.Interaction):
-
-    import aiohttp
-
-    secret = os.getenv("RECEPTION_SECRET")
-    port = os.getenv("PORT", "8080")
-
-    url = f"http://127.0.0.1:{port}/annonce"
-
-    annonce = {
-        "titre": "Veste Nike vintage - TEST",
-        "marque": "nike",
-        "prix": "25 €",
-        "vendeur": "vendeur_test",
-        "note": "4,9/5",
-        "avis": "127",
-        "lien": "https://www.vinted.fr/"
-    }
-
-    async with aiohttp.ClientSession() as session:
-        async with session.post(
-            url,
-            json=annonce,
-            headers={"Authorization": f"Bearer {secret}"}
-        ) as response:
-            resultat = await response.text()
-
-    await interaction.response.send_message(
-        f"Résultat du test : {response.status}\n{resultat}",
-        ephemeral=True
-    )
-
-
 bot.run(TOKEN)
