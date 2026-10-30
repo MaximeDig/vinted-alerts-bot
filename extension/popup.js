@@ -10,7 +10,7 @@ document.getElementById("scanner").addEventListener("click", async () => {
         currentWindow: true
     });
 
-    if (!onglet || !onglet.url?.includes("vinted.fr")) {
+    if (!onglet || !/^https:\/\/www\.vinted\.(fr|be|de|es|it|pt|lu)\//.test(onglet.url || "")) {
         statut.textContent = "Ouvre d'abord Vinted.";
         return;
     }
