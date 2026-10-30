@@ -166,32 +166,6 @@ async def on_ready():
 async def configurer_client(
     interaction: discord.Interaction,
     salon: discord.TextChannel
-):
-    if interaction.guild is None:
-        await interaction.response.send_message(
-            "Cette commande doit être utilisée sur un serveur.",
-            ephemeral=True
-        )
-        return
-
-    db.execute("""
-        INSERT INTO clients (guild_id, owner_id, channel_id, actif)
-        VALUES (?, ?, ?, 1)
-        ON CONFLICT(guild_id) DO UPDATE SET
-            owner_id = excluded.owner_id,
-            channel_id = excluded.channel_id,
-            actif = 1
-    """, (
-        str(interaction.guild.id),
-        str(interaction.user.id),
-        str(salon.id)
-    ))
-
-    db.commit()
-
-    await interaction.response.send_message(
-        f"Configuration enregistrée ! Les annonces seront envoyées dans {salon.mention}.",
-        ephemeral=True
     )
 @bot.tree.command(
     name="installer",
