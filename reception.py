@@ -5,17 +5,38 @@ import discord
 from aiohttp import web
 
 API_SECRET = os.getenv("RECEPTION_SECRET")
+DB_PATH = "vinted_alerts.db"
 
-if not API_SECRET:
-    raise RuntimeError("RECEPTION_SECRET est manquante.")
 
 async def recevoir_annonce(request):
     secret = request.headers.get("Authorization", "")
 
-    if secret != f"Bearer {API_SECRET}":
-        return web.json_response(
-            {"erreur": "Accès refusé"}, status=401
-        )
+authorization = request.headers.get("Authorization", "")
+
+if not authorization.startswith("Bearer "):
+    return web.json_response(
+        {"erreur": "Clé manquante"}, status=401
+    )
+
+cle = authorization.replace("Bearer ", "", 1)
+
+empreinte = hashlib.sha256(
+    cle.encode("utf-8")
+).hexdigest()
+
+with sqlite3.connect(DB_PATH) as db:
+    client = db.execute("""
+        SELECT guild_id, channel_id
+        FROM clients
+        WHERE token_hash = ? AND actif = 1
+    """, (empreinte,)).fetchone()
+
+if client is None:
+    return web.json_response(
+        {"erreur": "Clé invalide ou désactivée"}, status=401
+    )
+
+guild_id, channel_id = client
 
     try:
         data = await request.json()
@@ -38,9 +59,8 @@ async def recevoir_annonce(request):
             {"erreur": "Lien invalide"}, status=400
         )
 
-    bot = request.app["discord_bot"]
-    guild_id = int(os.getenv("DISCORD_GUILD_ID", "0"))
-    guild = bot.get_guild(guild_id)
+bot = request.app["discord_bot"]
+guild = bot.get_guild(int(guild_id))
 
     if guild is None:
         return web.json_response(
@@ -63,9 +83,10 @@ async def recevoir_annonce(request):
         text="Vinted Bot® | Alertes & analyse des annonces"
     )
 
-    channel = discord.utils.get(
-        guild.text_channels, name="prix-a-analyser"
-    )
+channel = guild.get_channel(int(channel_id)) if channel_id else None
+
+if channel is not None and not isinstance(channel, discord.TextChannel):
+    channel = None
 
     if channel is None:
         return web.json_response(
