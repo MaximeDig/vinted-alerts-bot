@@ -105,16 +105,18 @@ async def trouver_salon(guild, nom):
     return discord.utils.get(guild.text_channels, name=nom)
 
 
-@bot.event
-async def setup_hook():
-    await bot.tree.sync()
-
+commandes_synchronisees = False
 
 @bot.event
 async def on_ready():
-    print(f"Vinted Bot connecté : {bot.user}")
-    print("Commandes Discord synchronisées.")
+    global commandes_synchronisees
 
+    if not commandes_synchronisees:
+        await bot.tree.sync()
+        commandes_synchronisees = True
+        print("Commandes Discord synchronisées !")
+
+    print(f"Vinted Bot connecté : {bot.user}")
 
 @bot.tree.command(
     name="installer",
