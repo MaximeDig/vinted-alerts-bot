@@ -38,6 +38,17 @@ CREATE TABLE IF NOT EXISTS evaluations (
 
 db.commit()
 
+db.execute("""
+CREATE TABLE IF NOT EXISTS clients (
+    guild_id TEXT PRIMARY KEY,
+    owner_id TEXT NOT NULL,
+    channel_id TEXT,
+    actif INTEGER DEFAULT 1
+)
+""")
+
+db.commit()
+
 # Configuration Discord
 intents = discord.Intents.default()
 intents.guilds = True
