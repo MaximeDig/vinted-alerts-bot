@@ -2,19 +2,20 @@
   "manifest_version": 3,
   "name": "Vinted Discord Alerts",
   "version": "1.0.0",
-  "description": "Envoie les annonces visibles vers ton bot Discord.",
-  "permissions": [],
+  "description": "Repère les annonces Vinted.",
+  "permissions": ["activeTab"],
   "host_permissions": [
     "https://www.vinted.fr/*"
   ],
+  "action": {
+    "default_popup": "popup.html"
+  },
   "content_scripts": [
     {
       "matches": [
         "https://www.vinted.fr/*"
       ],
-      "js": [
-        "content.js"
-      ],
+      "js": ["content.js"],
       "run_at": "document_idle"
     }
   ]
