@@ -2,6 +2,8 @@
 import os
 import sqlite3
 import discord
+import secrets
+import hashlib
 from discord.ext import commands
 from discord import app_commands
 from reception import demarrer_reception
