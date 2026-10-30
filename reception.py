@@ -1,4 +1,5 @@
 
+
 import sqlite3
 import hashlib
 import os
@@ -66,44 +67,44 @@ async def recevoir_annonce(request):
         )
 
     marques = {
-    "nike": "nike",
-    "adidas": "adidas",
-    "stussy": "stussy",
-    "supreme": "supreme",
-    "carhartt": "carhartt",
-    "ralph lauren": "ralph-lauren",
-    "lacoste": "lacoste",
-    "tommy hilfiger": "tommy-hilfiger",
-    "hugo boss": "hugo-boss",
-    "stone island": "stone-island",
-    "burberry": "burberry",
-    "dior": "dior",
-    "gucci": "gucci",
-    "prada": "prada",
-    "levis": "levis",
-    "dickies": "dickies",
-    "patagonia": "patagonia",
-    "the north face": "the-north-face",
-    "arcteryx": "arcteryx",
-    "nike jordan": "nike-jordan",
-    "new balance": "new-balance",
-    "asics": "asics",
-    "salomon": "salomon"
-}
+        "nike": "nike",
+        "adidas": "adidas",
+        "stussy": "stussy",
+        "supreme": "supreme",
+        "carhartt": "carhartt",
+        "ralph lauren": "ralph-lauren",
+        "lacoste": "lacoste",
+        "tommy hilfiger": "tommy-hilfiger",
+        "hugo boss": "hugo-boss",
+        "stone island": "stone-island",
+        "burberry": "burberry",
+        "dior": "dior",
+        "gucci": "gucci",
+        "prada": "prada",
+        "levis": "levis",
+        "dickies": "dickies",
+        "patagonia": "patagonia",
+        "the north face": "the-north-face",
+        "arcteryx": "arcteryx",
+        "nike jordan": "nike-jordan",
+        "new balance": "new-balance",
+        "asics": "asics",
+        "salomon": "salomon"
+    }
 
-nom_marque = str(marque).lower().strip()
-nom_salon = marques.get(nom_marque, "prix-a-analyser")
+    nom_marque = str(marque).lower().strip()
+    nom_salon = marques.get(nom_marque, "prix-a-analyser")
 
-channel = discord.utils.get(
-    guild.text_channels,
-    name=nom_salon
-)
-
-if channel is None:
-    return web.json_response(
-        {"erreur": f"Salon #{nom_salon} introuvable"},
-        status=503
+    channel = discord.utils.get(
+        guild.text_channels,
+        name=nom_salon
     )
+
+    if channel is None:
+        return web.json_response(
+            {"erreur": f"Salon #{nom_salon} introuvable"},
+            status=503
+        )
 
     embed = discord.Embed(
         title=str(titre)[:256],
