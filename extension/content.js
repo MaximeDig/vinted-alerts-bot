@@ -1,4 +1,5 @@
 
+
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.type !== "VINTED_SCAN") return;
 
@@ -56,4 +57,5 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
     sendResponse({ annonces });
 });
+
 
