@@ -289,9 +289,9 @@ async def installer(interaction: discord.Interaction):
     if analyse is None:
         analyse = await guild.create_category("ANALYSE")
 
-    if await trouver_salon(guild, "prix-a-analyser") is None:
+    if await trouver_salon(guild, "🌍︲prix-a-analyser") is None:
         await guild.create_text_channel(
-            "prix-a-analyser",
+            "🌍︲prix-a-analyser",
             category=analyse
         )
 
@@ -346,7 +346,7 @@ async def tester_annonce(
     salon = MARQUES.get(nom)
 
     if salon is None:
-        salon = "prix-a-analyser"
+        salon = "🌍︲prix-a-analyser"
 
     pays_normalise = pays.lower().strip()
 
@@ -372,7 +372,7 @@ async def tester_annonce(
     ecart = ((prix - reference) / reference) * 100
 
     if abs(ecart) >= SEUIL:
-        destination = "prix-a-analyser"
+        destination = "🌍︲prix-a-analyser"
 
         if ecart < 0:
             statut = "🔻 PRIX BIEN EN DESSOUS DE LA RÉFÉRENCE"
@@ -451,7 +451,7 @@ async def tester_annonce(
 
     db.commit()
 
-    if destination == "prix-a-analyser":
+    if destination == "🌍︲prix-a-analyser":
         await message.add_reaction("✅")
         await message.add_reaction("❌")
 
