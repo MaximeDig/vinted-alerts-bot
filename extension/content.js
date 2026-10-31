@@ -1,34 +1,45 @@
+
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    if (message.type === "VINTED_SCAN") {
-        const liens = document.querySelectorAll('a[href*="/items/"]');
-        const annonces = [];
-        const dejaVues = new Set();
+    if (message.type !== "VINTED_SCAN") return;
 
-        liens.forEach(lien => {
-            const url = lien.href;
+    const liens = document.querySelectorAll('a[href*="/items/"]');
+    const annonces = [];
+    const dejaVues = new Set();
 
-            if (!/^https:\/\/www\.vinted\.(fr|be|de|es|it|pt|lu)\/items\//.test(url)) return;
-            if (dejaVues.has(url)) return;
+    liens.forEach((lien) => {
+        const url = lien.href;
 
-            dejaVues.add(url);
+        if (!/^https:\/\/www\.vinted\.(fr|be|de|es|it|pt|lu)\/items\//.test(url)) {
+            return;
+        }
 
-            const bloc = lien.closest("div");
-            if (!bloc) return;
+        if (dejaVues.has(url)) return;
+        dejaVues.add(url);
 
-            const texte = bloc.innerText || "";
-            const prix = texte.match(/\d+(?:[,.]\d{1,2})?\s*€/);
-            const image = bloc.querySelector("img");
+        const bloc = lien.closest("div");
+        if (!bloc) return;
 
-            annonces.push({
-                titre: texte.slice(0, 150),
-                prix: prix ? prix[0] : "Non trouvé",
-                lien: url,
-                image: image ? image.src : null
-            });
+        const texte = bloc.innerText || "";
+
+        // Récupération du prix en euros
+        const correspondance = texte.match(
+            /(\d+(?:[.,]\d{1,2})?)\s*€/
+        );
+
+        // Conversion en nombre : "20,50 €" devient 20.50
+        const prix = correspondance
+            ? Number(correspondance[1].replace(",", "."))
+            : null;
+
+        const image = bloc.querySelector("img");
+
+        annonces.push({
+            titre: texte.slice(0, 150),
+            prix: Number.isFinite(prix) ? prix : null,
+            lien: url,
+            image: image ? image.src : null
         });
+    });
 
-        sendResponse({ annonces });
-    }
-
-    return true;
+    sendResponse({ annonces });
 });
