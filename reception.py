@@ -1,20 +1,21 @@
 
-
 import sqlite3
 import hashlib
 import os
+import unicodedata
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
 import discord
 from aiohttp import web
 
+
 DB_PATH = "vinted_alerts.db"
 
 # Estimation forfaitaire de 13 %
 COEFFICIENT_ESTIMATION = 1.13
 
-# Noms des salons : ils doivent correspondre à bot.py
+# Noms des salons Discord
 MARQUES = {
     "nike": "🇺🇸︲nike",
     "adidas": "🇩🇪︲adidas",
@@ -44,7 +45,49 @@ MARQUES = {
 SALON_ANALYSE = "🌍︲prix-a-analyser"
 
 
+def normaliser_marque(marque):
+    """Uniformise les accents, apostrophes et espaces."""
+    texte = str(marque or "").lower().strip()
+
+    texte = unicodedata.normalize("NFKD", texte)
+    texte = "".join(
+        caractere
+        for caractere in texte
+        if not unicodedata.combining(caractere)
+    )
+
+    # Enlever les caractères spéciaux
+    texte = "".join(
+        caractere
+        for caractere in texte
+        if caractere.isalnum()
+    )
+
+    return texte
+
+
+def trouver_salon(marque):
+    """Trouve le salon même si la marque a une écriture différente."""
+    nom = normaliser_marque(marque)
+
+    alias = {
+        "levistrauss": "levis",
+        "levistraussco": "levis",
+        "arcteryx": "arcteryx",
+        "stussy": "stussy",
+    }
+
+    nom = alias.get(nom, nom)
+
+    for marque_connue, salon in MARQUES.items():
+        if normaliser_marque(marque_connue) == nom:
+            return salon
+
+    return SALON_ANALYSE
+
+
 async def recevoir_annonce(request):
+    # Vérification de la clé API
     authorization = request.headers.get("Authorization", "")
 
     if not authorization.startswith("Bearer "):
@@ -77,6 +120,7 @@ async def recevoir_annonce(request):
 
     guild_id, channel_id = client
 
+    # Lecture des données de l'annonce
     try:
         data = await request.json()
     except Exception:
@@ -116,21 +160,23 @@ async def recevoir_annonce(request):
     # Vérification du prix
     try:
         prix = float(prix)
+
         if prix <= 0:
             raise ValueError
+
     except (TypeError, ValueError):
         return web.json_response(
             {"erreur": "Prix invalide"},
             status=400,
         )
 
-    # Calcul du prix estimé avec 13 % supplémentaires
+    # Prix TTC estimé
     prix_estime = prix * COEFFICIENT_ESTIMATION
 
     prix_affiche = (
-        f"{prix:,.2f} € | ≈ {prix_estime:,.2f} € "
+        f"{prix:.2f} € | ≈ {prix_estime:.2f} € "
         "(TTC estimé)"
-    ).replace(",", " ").replace(".", ",")
+    ).replace(".", ",")
 
     # Recherche du serveur Discord
     bot = request.app["discord_bot"]
@@ -142,41 +188,20 @@ async def recevoir_annonce(request):
             status=503,
         )
 
-   
-# Classement par marque
-nom_marque = str(marque).lower().strip()
+    # Classement par marque
+    nom_salon = trouver_salon(marque)
 
-# Uniformiser les différentes écritures
-nom_marque = nom_marque.replace("’", "'")
+    # Recherche du salon
+    channel = discord.utils.get(
+        guild.text_channels,
+        name=nom_salon,
+    )
 
-# Corriger Levi's, Arc'teryx et Stüssy
-alias_marques = {
-    # Levi's
-    "levi's": "levis",
-    "levi strauss": "levis",
-    "levi strauss & co": "levis",
-
-    # Arc'teryx
-    "arc'teryx": "arcteryx",
-    "arc teryx": "arcteryx",
-    "arc-teryx": "arcteryx",
-
-    # Stüssy
-    "stüssy": "stussy",
-    "stúussy": "stussy",
-    "stussy": "stussy",
-}
-
-nom_marque = alias_marques.get(
-    nom_marque,
-    nom_marque
-)
-
-nom_salon = MARQUES.get(
-    nom_marque,
-    SALON_ANALYSE,
-)
-
+    if channel is None:
+        return web.json_response(
+            {"erreur": f"Salon #{nom_salon} introuvable"},
+            status=503,
+        )
 
     # Création de l'annonce Discord
     embed = discord.Embed(
@@ -230,10 +255,11 @@ nom_salon = MARQUES.get(
             inline=True,
         )
 
+    # Photo de l'annonce
     if isinstance(image, str) and image.startswith("https://"):
         embed.set_image(url=image)
 
-    # Heure française de publication
+    # Heure française
     heure_publication = datetime.now(
         ZoneInfo("Europe/Paris")
     ).strftime("%H:%M")
@@ -245,6 +271,7 @@ nom_salon = MARQUES.get(
         )
     )
 
+    # Envoi vers Discord
     await channel.send(embed=embed)
 
     return web.json_response(
@@ -262,6 +289,7 @@ async def demarrer_reception(bot):
     )
 
     app["discord_bot"] = bot
+
     app.router.add_post(
         "/annonce",
         recevoir_annonce,
