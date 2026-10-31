@@ -16,39 +16,41 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         if (dejaVues.has(url)) return;
         dejaVues.add(url);
 
-        // Remonter progressivement dans les éléments parents
-        let bloc = lien;
-        let texte = "";
+        // Récupérer l'identifiant de l'annonce
+        const correspondanceId = url.match(/\/items\/(\d+)/);
+        if (!correspondanceId) return;
 
-        for (let i = 0; i < 10 && bloc; i++) {
-            texte = bloc.innerText || "";
+        const id = correspondanceId[1];
 
-            if (/\d+(?:[,.]\d{1,2})?\s*€/.test(texte)) {
-                break;
-            }
+        // Trouver le prix correspondant exactement à cette annonce
+        const prixElement = document.querySelector(
+            `[data-testid="product-item-id-${id}--price-text"]`
+        );
 
-            bloc = bloc.parentElement;
-        }
+        const textePrix = prixElement?.textContent
+            ?.replace(/\u00a0/g, " ")
+            .trim();
 
-        if (!bloc) return;
-
-        const correspondance = texte.match(
+        const correspondancePrix = textePrix?.match(
             /(\d+(?:[,.]\d{1,2})?)\s*€/
         );
 
-        const prix = correspondance
-            ? Number(correspondance[1].replace(",", "."))
+        const prix = correspondancePrix
+            ? Number(correspondancePrix[1].replace(",", "."))
             : null;
 
-        const image = bloc.querySelector("img");
+        // Récupérer l'image
+        const bloc = lien.closest("div");
+        const image = bloc?.querySelector("img");
 
         annonces.push({
-            titre: texte.slice(0, 150),
+            titre: bloc?.innerText?.slice(0, 150) || "Sans titre",
             prix: Number.isFinite(prix) ? prix : null,
             lien: url,
-            image: image ? image.src : null
+            image: image?.src || null
         });
     });
 
     sendResponse({ annonces });
 });
+
