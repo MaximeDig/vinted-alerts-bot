@@ -418,7 +418,7 @@ async def tester_annonce(
     else:
         destination = salon_marque
         statut = "✅ PRIX COHÉRENT"
-            channel = await trouver_salon(interaction.guild, destination)
+        channel = await trouver_salon(interaction.guild, destination)
     if channel is None:
         await interaction.response.send_message(
             f"Le salon #{destination} est introuvable. Lance /installer.",
