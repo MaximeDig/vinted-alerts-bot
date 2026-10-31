@@ -61,8 +61,7 @@ CREATE TABLE IF NOT EXISTS clients (
 )
 """)
 
-colonnes = 
-{
+colonnes = {
     ligne[1]
     for ligne in db.execute("PRAGMA table_info(clients)").fetchall()
 }
