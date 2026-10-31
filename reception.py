@@ -142,23 +142,41 @@ async def recevoir_annonce(request):
             status=503,
         )
 
-    # Classement par marque
-    nom_marque = str(marque).lower().strip()
-    nom_salon = MARQUES.get(
-        nom_marque,
-        SALON_ANALYSE,
-    )
+   
+# Classement par marque
+nom_marque = str(marque).lower().strip()
 
-    channel = discord.utils.get(
-        guild.text_channels,
-        name=nom_salon,
-    )
+# Uniformiser les différentes écritures
+nom_marque = nom_marque.replace("’", "'")
 
-    if channel is None:
-        return web.json_response(
-            {"erreur": f"Salon #{nom_salon} introuvable"},
-            status=503,
-        )
+# Corriger Levi's, Arc'teryx et Stüssy
+alias_marques = {
+    # Levi's
+    "levi's": "levis",
+    "levi strauss": "levis",
+    "levi strauss & co": "levis",
+
+    # Arc'teryx
+    "arc'teryx": "arcteryx",
+    "arc teryx": "arcteryx",
+    "arc-teryx": "arcteryx",
+
+    # Stüssy
+    "stüssy": "stussy",
+    "stúussy": "stussy",
+    "stussy": "stussy",
+}
+
+nom_marque = alias_marques.get(
+    nom_marque,
+    nom_marque
+)
+
+nom_salon = MARQUES.get(
+    nom_marque,
+    SALON_ANALYSE,
+)
+
 
     # Création de l'annonce Discord
     embed = discord.Embed(
