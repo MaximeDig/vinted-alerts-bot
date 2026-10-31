@@ -325,14 +325,10 @@ async def tester_annonce(
         return
 
     nom = marque.lower().strip()
-    salon = MARQUES.get(nom)
+salon = MARQUES.get(nom)
 
-    if salon is None:
-        await interaction.response.send_message(
-            "Marque non reconnue. Vérifie son nom.",
-            ephemeral=True
-        )
-        return
+if salon is None:
+    salon = "prix-a-analyser"
 
     pays_normalise = pays.lower().strip()
 
