@@ -16,17 +16,26 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         if (dejaVues.has(url)) return;
         dejaVues.add(url);
 
-        const bloc = lien.closest("div");
+        // Remonter progressivement dans les éléments parents
+        let bloc = lien;
+        let texte = "";
+
+        for (let i = 0; i < 10 && bloc; i++) {
+            texte = bloc.innerText || "";
+
+            if (/\d+(?:[,.]\d{1,2})?\s*€/.test(texte)) {
+                break;
+            }
+
+            bloc = bloc.parentElement;
+        }
+
         if (!bloc) return;
 
-        const texte = bloc.innerText || "";
-
-        // Récupération du prix en euros
         const correspondance = texte.match(
-            /(\d+(?:[.,]\d{1,2})?)\s*€/
+            /(\d+(?:[,.]\d{1,2})?)\s*€/
         );
 
-        // Conversion en nombre : "20,50 €" devient 20.50
         const prix = correspondance
             ? Number(correspondance[1].replace(",", "."))
             : null;
