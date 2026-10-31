@@ -1,7 +1,48 @@
-document.getElementById("scanner").addEventListener("click", async () => {
-    const statut = document.getElementById("statut");
-    const resultats = document.getElementById("resultats");
 
+const serverUrlInput = document.getElementById("serverUrl");
+const apiKeyInput = document.getElementById("apiKey");
+const statut = document.getElementById("statut");
+const resultats = document.getElementById("resultats");
+
+// Charger la configuration enregistrée
+chrome.storage.local.get(
+    ["serverUrl", "apiKey"],
+    (config) => {
+        if (config.serverUrl) {
+            serverUrlInput.value = config.serverUrl;
+        }
+
+        if (config.apiKey) {
+            apiKeyInput.value = config.apiKey;
+        }
+    }
+);
+
+// Enregistrer la configuration
+document.getElementById("sauvegarder").addEventListener("click", async () => {
+    const serverUrl = serverUrlInput.value.trim().replace(/\/+$/, "");
+    const apiKey = apiKeyInput.value.trim();
+
+    if (!serverUrl.startsWith("https://") || !serverUrl.endsWith("/annonce")) {
+        statut.textContent = "Vérifie l'adresse de réception.";
+        return;
+    }
+
+    if (!apiKey) {
+        statut.textContent = "Entre ta clé API.";
+        return;
+    }
+
+    await chrome.storage.local.set({
+        serverUrl,
+        apiKey
+    });
+
+    statut.textContent = "Configuration enregistrée !";
+});
+
+// Scanner les annonces visibles
+document.getElementById("scanner").addEventListener("click", async () => {
     statut.textContent = "Recherche des annonces...";
     resultats.replaceChildren();
 
@@ -42,16 +83,17 @@ document.getElementById("scanner").addEventListener("click", async () => {
                 lien.rel = "noopener noreferrer";
 
                 if (annonce.image) {
-    const photo = document.createElement("img");
-    photo.src = annonce.image;
-    photo.alt = "Photo de l'annonce";
-    photo.width = 120;
-    bloc.appendChild(photo);
-}
+                    const photo = document.createElement("img");
+                    photo.src = annonce.image;
+                    photo.alt = "Photo de l'annonce";
+                    photo.width = 120;
+                    bloc.appendChild(photo);
+                }
 
-bloc.append(titre, prix, lien);
+                bloc.append(titre, prix, lien);
                 resultats.appendChild(bloc);
             });
         }
     );
 });
+
