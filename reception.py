@@ -1,5 +1,4 @@
 
-
 import sqlite3
 import hashlib
 import os
@@ -7,6 +6,36 @@ import discord
 from aiohttp import web
 
 DB_PATH = "vinted_alerts.db"
+
+
+# Noms des salons : ils doivent correspondre à bot.py
+MARQUES = {
+    "nike": "🇺🇸︲nike",
+    "adidas": "🇩🇪︲adidas",
+    "stussy": "🇺🇸︲stussy",
+    "supreme": "🇺🇸︲supreme",
+    "carhartt": "🇺🇸︲carhartt",
+    "ralph lauren": "🇺🇸︲ralph-lauren",
+    "lacoste": "🇫🇷︲lacoste",
+    "tommy hilfiger": "🇺🇸︲tommy-hilfiger",
+    "hugo boss": "🇩🇪︲hugo-boss",
+    "stone island": "🇮🇹︲stone-island",
+    "burberry": "🇬🇧︲burberry",
+    "dior": "🇫🇷︲dior",
+    "gucci": "🇮🇹︲gucci",
+    "prada": "🇮🇹︲prada",
+    "levis": "🇺🇸︲levis",
+    "dickies": "🇺🇸︲dickies",
+    "patagonia": "🇺🇸︲patagonia",
+    "the north face": "🇺🇸︲the-north-face",
+    "arcteryx": "🇨🇦︲arcteryx",
+    "nike jordan": "🇺🇸︲nike-jordan",
+    "new balance": "🇺🇸︲new-balance",
+    "asics": "🇯🇵︲asics",
+    "salomon": "🇫🇷︲salomon"
+}
+
+SALON_ANALYSE = "🌍︲prix-a-analyser"
 
 
 async def recevoir_annonce(request):
@@ -44,6 +73,11 @@ async def recevoir_annonce(request):
             {"erreur": "JSON invalide"}, status=400
         )
 
+    if not isinstance(data, dict):
+        return web.json_response(
+            {"erreur": "Format JSON invalide"}, status=400
+        )
+
     lien = data.get("lien", "")
     titre = data.get("titre", "Annonce Vinted")
     marque = data.get("marque", "Non précisée")
@@ -66,34 +100,8 @@ async def recevoir_annonce(request):
             {"erreur": "Serveur Discord introuvable"}, status=503
         )
 
-    marques = {
-        "nike": "nike",
-        "adidas": "adidas",
-        "stussy": "stussy",
-        "supreme": "supreme",
-        "carhartt": "carhartt",
-        "ralph lauren": "ralph-lauren",
-        "lacoste": "lacoste",
-        "tommy hilfiger": "tommy-hilfiger",
-        "hugo boss": "hugo-boss",
-        "stone island": "stone-island",
-        "burberry": "burberry",
-        "dior": "dior",
-        "gucci": "gucci",
-        "prada": "prada",
-        "levis": "levis",
-        "dickies": "dickies",
-        "patagonia": "patagonia",
-        "the north face": "the-north-face",
-        "arcteryx": "arcteryx",
-        "nike jordan": "nike-jordan",
-        "new balance": "new-balance",
-        "asics": "asics",
-        "salomon": "salomon"
-    }
-
     nom_marque = str(marque).lower().strip()
-    nom_salon = marques.get(nom_marque, "prix-a-analyser")
+    nom_salon = MARQUES.get(nom_marque, SALON_ANALYSE)
 
     channel = discord.utils.get(
         guild.text_channels,
