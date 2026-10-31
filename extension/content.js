@@ -21,9 +21,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         const id = matchId[1];
         if (dejaVues.has(id)) return;
 
-       const prixTexte = element.innerText || element.textContent || "";
-            .replace(/\u00a0/g, " ")
-            .trim();
+const prixTexte = (element.innerText || element.textContent || "")
+    .replace(/\u00a0/g, " ")
+    .trim();
+
+console.log("TEST PRIX :", id, prixTexte);
 
         const matchPrix = prixTexte.match(
             /(\d+(?:[,.]\d{1,2})?)\s*€/
