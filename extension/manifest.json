@@ -1,9 +1,13 @@
+
 {
   "manifest_version": 3,
   "name": "Vinted Discord Alerts",
-  "version": "1.0.0",
-  "description": "Repère les annonces Vinted.",
-  "permissions": ["activeTab"],
+  "version": "1.0.1",
+  "description": "Repère les annonces Vinted et les transmet à Discord.",
+  "permissions": [
+    "activeTab",
+    "storage"
+  ],
   "host_permissions": [
     "https://www.vinted.fr/*",
     "https://www.vinted.be/*",
@@ -11,7 +15,8 @@
     "https://www.vinted.es/*",
     "https://www.vinted.it/*",
     "https://www.vinted.pt/*",
-    "https://www.vinted.lu/*"
+    "https://www.vinted.lu/*",
+    "https://kiqnfbglxp.apps.bot-hosting.cloud/*"
   ],
   "action": {
     "default_popup": "popup.html"
