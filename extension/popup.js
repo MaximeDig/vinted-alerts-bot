@@ -1,160 +1,87 @@
-const serverUrlInput = document.getElementById("serverUrl");
-const apiKeyInput = document.getElementById("apiKey");
-const statut = document.getElementById("statut");
-const resultats = document.getElementById("resultats");
-const boutonEnvoyer = document.getElementById("envoyer");
-
+const $ = id => document.getElementById(id);
+const DEFAULT_URL = 'https://kiqnfbglxp.apps.bot-hosting.cloud/annonce';
 let annoncesDetectees = [];
 
-chrome.storage.local.get(
-    ["serverUrl", "apiKey"],
-    (config) => {
-        if (config.serverUrl) serverUrlInput.value = config.serverUrl;
-        if (config.apiKey) apiKeyInput.value = config.apiKey;
-    }
-);
+function statut(message) { $('statut').textContent = message; }
+function validerUrl(value) {
+  try { const url = new URL(value); return url.protocol === 'https:' && url.pathname.endsWith('/annonce'); }
+  catch { return false; }
+}
+function configLocale() { return new Promise(resolve => chrome.storage.local.get(['serverUrl', 'apiKey'], resolve)); }
 
-// Enregistrer la configuration
-document.getElementById("sauvegarder").addEventListener("click", async () => {
-    const serverUrl = serverUrlInput.value.trim().replace(/\/+$/, "");
-    const apiKey = apiKeyInput.value.trim();
+(async () => {
+  const cfg = await configLocale();
+  $('serverUrl').value = cfg.serverUrl || DEFAULT_URL;
+  $('apiKey').value = cfg.apiKey || '';
+})();
 
-    if (!serverUrl.startsWith("https://") || !serverUrl.endsWith("/annonce")) {
-        statut.textContent = "Vérifie l'adresse de réception.";
-        return;
-    }
-
-    if (!apiKey) {
-        statut.textContent = "Entre ta clé API.";
-        return;
-    }
-
-    await chrome.storage.local.set({ serverUrl, apiKey });
-    statut.textContent = "Configuration enregistrée !";
+$('sauvegarder').addEventListener('click', async () => {
+  const serverUrl = $('serverUrl').value.trim();
+  const apiKey = $('apiKey').value.trim();
+  if (!validerUrl(serverUrl)) return statut('Adresse HTTPS invalide : elle doit se terminer par /annonce.');
+  await chrome.storage.local.set({ serverUrl, apiKey });
+  statut('Configuration enregistrée localement.');
 });
 
-// Scanner les annonces visibles
-document.getElementById("scanner").addEventListener("click", async () => {
-    statut.textContent = "Recherche des annonces...";
-    resultats.replaceChildren();
-    annoncesDetectees = [];
-    boutonEnvoyer.disabled = true;
-
-    const [onglet] = await chrome.tabs.query({
-        active: true,
-        currentWindow: true
-    });
-
-    if (!onglet || !/^https:\/\/www\.vinted\.(fr|be|de|es|it|pt|lu)\//.test(onglet.url || "")) {
-        statut.textContent = "Ouvre d'abord Vinted.";
-        return;
+function afficher(annonces) {
+  const resultats = $('resultats');
+  resultats.replaceChildren();
+  for (const annonce of annonces) {
+    const item = document.createElement('div'); item.className = 'item';
+    if (annonce.image) {
+      const img = document.createElement('img'); img.src = annonce.image; img.alt = 'Photo de l’annonce';
+      img.referrerPolicy = 'no-referrer';
+      img.addEventListener('error', () => { img.remove(); });
+      item.append(img);
     }
+    const details = document.createElement('div'); details.className = 'details';
+    const title = document.createElement('div'); title.textContent = annonce.titre;
+    const price = document.createElement('div'); price.textContent = `${annonce.prix} €`;
+    const link = document.createElement('a'); link.href = annonce.lien; link.target = '_blank'; link.rel = 'noopener noreferrer'; link.textContent = 'Voir sur Vinted';
+    details.append(title, price, link); item.append(details); resultats.append(item);
+  }
+}
 
-    chrome.tabs.sendMessage(
-        onglet.id,
-        { type: "VINTED_SCAN" },
-        (reponse) => {
-            if (chrome.runtime.lastError) {
-                statut.textContent = "Recharge la page Vinted.";
-                return;
-            }
-
-            annoncesDetectees = reponse?.annonces || [];
-            statut.textContent = annoncesDetectees.length + " annonce(s) trouvée(s).";
-
-            annoncesDetectees.forEach((annonce) => {
-                const bloc = document.createElement("div");
-                const titre = document.createElement("p");
-                const prix = document.createElement("p");
-                const lien = document.createElement("a");
-
-                titre.textContent = annonce.titre || "Sans titre";
-                prix.textContent = annonce.prix + " €";
-
-                lien.textContent = "Voir l'annonce";
-                lien.href = annonce.lien;
-                lien.target = "_blank";
-                lien.rel = "noopener noreferrer";
-
-                if (annonce.image) {
-                    const photo = document.createElement("img");
-                    photo.src = annonce.image;
-                    photo.alt = "Photo de l'annonce";
-                    photo.width = 120;
-                    bloc.appendChild(photo);
-                }
-
-                bloc.append(titre, prix, lien);
-                resultats.appendChild(bloc);
-            });
-
-            boutonEnvoyer.disabled = annoncesDetectees.length === 0;
-        }
-    );
+$('scanner').addEventListener('click', async () => {
+  $('envoyer').disabled = true;
+  annoncesDetectees = [];
+  statut('Analyse des annonces affichées…');
+  try {
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    if (!tab?.id || !/^https:\/\/(?:[a-z]{2}\.)?vinted\./i.test(tab.url || '')) {
+      return statut('Ouvre d’abord une page Vinted dans cet onglet.');
+    }
+    const response = await chrome.tabs.sendMessage(tab.id, { type: 'VINTED_SCAN' });
+    annoncesDetectees = response?.annonces || [];
+    afficher(annoncesDetectees);
+    $('envoyer').disabled = annoncesDetectees.length === 0;
+    statut(`${annoncesDetectees.length} annonce(s) trouvée(s). Envoi uniquement sur clic.`);
+  } catch (e) { statut('Impossible de scanner : actualise la page Vinted et réessaie.'); }
 });
 
-// Envoyer manuellement les annonces à Discord
-boutonEnvoyer.addEventListener("click", async () => {
-    const config = await chrome.storage.local.get(["serverUrl", "apiKey"]);
-
-    if (!config.serverUrl || !config.apiKey) {
-        statut.textContent = "Enregistre d'abord ta configuration.";
-        return;
-    }
-
-    if (annoncesDetectees.length === 0) {
-        statut.textContent = "Aucune annonce à envoyer.";
-        return;
-    }
-
-    boutonEnvoyer.disabled = true;
-    let envoyees = 0;
-    let erreurs = 0;
-
-    const marques = [
-        "the north face", "ralph lauren", "tommy hilfiger",
-        "stone island", "new balance", "nike jordan",
-        "hugo boss", "carhartt", "patagonia", "supreme",
-        "stussy", "adidas", "lacoste", "burberry",
-        "dior", "gucci", "prada", "levis", "dickies",
-        "arcteryx", "asics", "salomon", "nike"
-    ];
-
-    for (const annonce of annoncesDetectees) {
-        const titre = annonce.titre || "Annonce Vinted";
-        const texte = titre.toLowerCase();
-        const marque = marques.find(m => texte.includes(m)) || "Non précisée";
-
-        try {
-            const response = await fetch(config.serverUrl, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${config.apiKey}`
-                },
-                body: JSON.stringify({
-                    titre,
-                    marque,
-                    prix: Number(annonce.prix),
-                    lien: annonce.lien,
-                    image: annonce.image
-                })
-            });
-
-            if (response.ok) {
-                envoyees++;
-            } else {
-                erreurs++;
-            }
-        } catch (error) {
-            erreurs++;
-        }
-    }
-
-    statut.textContent =
-        `${envoyees} annonce(s) envoyée(s), ${erreurs} erreur(s).`;
-
-    // Évite de renvoyer accidentellement le même lot.
-    annoncesDetectees = [];
+$('envoyer').addEventListener('click', async () => {
+  if (!annoncesDetectees.length) return;
+  $('envoyer').disabled = true;
+  const { serverUrl, apiKey } = await configLocale();
+  if (!validerUrl(serverUrl || '') || !apiKey) {
+    $('envoyer').disabled = false;
+    return statut('Enregistre une adresse HTTPS et ta clé API dans l’extension.');
+  }
+  let ok = 0, erreurs = 0;
+  // Déclenché explicitement par l'utilisateur, sans envoi automatique.
+  for (const annonce of annoncesDetectees) {
+    try {
+      const response = await fetch(serverUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
+        body: JSON.stringify({ titre: annonce.titre, marque: annonce.marque || 'Non précisée',
+          prix: annonce.prix, taille: annonce.taille || 'Non précisée', etat: annonce.etat || 'Non précisé',
+          lien: annonce.lien, image: annonce.image })
+      });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      ok++;
+    } catch { erreurs++; }
+  }
+  statut(`${ok} annonce(s) envoyée(s), ${erreurs} erreur(s).`);
+  annoncesDetectees = [];
 });
-

@@ -1,42 +1,4 @@
 <!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <title>Vinted Alerts</title>
-</head>
-<body>
-    <h2>Vinted Discord Alerts</h2>
-
-    <h3>Configuration du serveur</h3>
-
-    <label for="serverUrl">Adresse de réception :</label>
-    <input
-        id="serverUrl"
-        type="url"
-        value="https://kiqnfbglxp.apps.bot-hosting.cloud/annonce"
-    >
-
-    <br><br>
-
-    <label for="apiKey">Clé API :</label>
-    <input
-        id="apiKey"
-        type="password"
-        placeholder="Colle ta clé API ici"
-    >
-
-    <br><br>
-
-    <button id="sauvegarder">Enregistrer la configuration</button>
-
-    <hr>
-
-    <button id="scanner">Scanner les annonces</button>
-    <button id="envoyer" disabled>Envoyer à Discord</button>
-
-    <div id="resultats"></div>
-    <p id="statut">En attente...</p>
-
-    <script src="popup.js"></script>
-</body>
-</html>
+<html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Vinted Discord Alerts</title>
+<style>body{font:14px Arial,sans-serif;width:345px;margin:14px;color:#17232c}input{box-sizing:border-box;width:100%;margin:5px 0 10px;padding:8px}button{padding:9px 12px;margin:5px 4px 10px 0;cursor:pointer}.item{display:flex;gap:10px;border-top:1px solid #ddd;padding:10px 0}.item img{width:72px;height:72px;object-fit:cover;border-radius:5px}.details{min-width:0;overflow-wrap:anywhere}.small{font-size:12px;color:#52616b}a{color:#006c9c}#statut{white-space:pre-wrap}</style>
+</head><body><h2>Vinted Discord Alerts</h2><label for="serverUrl">Adresse de réception</label><input id="serverUrl" type="url" value="https://kiqnfbglxp.apps.bot-hosting.cloud/annonce"><label for="apiKey">Clé API (ne la partage pas)</label><input id="apiKey" type="password" autocomplete="off"><button id="sauvegarder">Enregistrer</button><hr><button id="scanner">Scanner cette page</button><button id="envoyer" disabled>Envoyer à Discord</button><p id="statut" role="status">En attente…</p><div id="resultats"></div><script src="popup.js"></script></body></html>

@@ -1,39 +1,32 @@
-
 {
   "manifest_version": 3,
   "name": "Vinted Discord Alerts",
-  "version": "1.0.1",
-  "description": "Repère les annonces Vinted et les transmet à Discord.",
+  "version": "1.0.3",
+  "description": "Scanne manuellement les annonces Vinted visibles et les envoie sur demande à Discord.",
   "permissions": [
-    "activeTab",
-    "storage"
+    "storage",
+    "activeTab"
   ],
   "host_permissions": [
-    "https://www.vinted.fr/*",
-    "https://www.vinted.be/*",
-    "https://www.vinted.de/*",
-    "https://www.vinted.es/*",
-    "https://www.vinted.it/*",
-    "https://www.vinted.pt/*",
-    "https://www.vinted.lu/*",
     "https://kiqnfbglxp.apps.bot-hosting.cloud/*"
   ],
-  "action": {
-    "default_popup": "popup.html"
-  },
   "content_scripts": [
     {
       "matches": [
-        "https://www.vinted.fr/*",
-        "https://www.vinted.be/*",
-        "https://www.vinted.de/*",
-        "https://www.vinted.es/*",
-        "https://www.vinted.it/*",
-        "https://www.vinted.pt/*",
-        "https://www.vinted.lu/*"
+        "https://*.vinted.fr/*",
+        "https://*.vinted.be/*",
+        "https://*.vinted.de/*",
+        "https://*.vinted.es/*",
+        "https://*.vinted.it/*",
+        "https://*.vinted.pt/*",
+        "https://*.vinted.lu/*"
       ],
-      "js": ["content.js"],
-      "run_at": "document_idle"
+      "js": [
+        "content.js"
+      ]
     }
-  ]
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  }
 }
