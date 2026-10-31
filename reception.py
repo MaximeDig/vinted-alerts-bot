@@ -3,6 +3,9 @@
 import sqlite3
 import hashlib
 import os
+from datetime import datetime
+from zoneinfo import ZoneInfo
+
 import discord
 from aiohttp import web
 
@@ -212,8 +215,16 @@ async def recevoir_annonce(request):
     if isinstance(image, str) and image.startswith("https://"):
         embed.set_image(url=image)
 
+    # Heure française de publication
+    heure_publication = datetime.now(
+        ZoneInfo("Europe/Paris")
+    ).strftime("%H:%M")
+
     embed.set_footer(
-        text="Vinted Bot® | Alertes & analyse des annonces"
+        text=(
+            "Vinted Bot® | Alertes & analyse des annonces"
+            f" • {heure_publication}"
+        )
     )
 
     await channel.send(embed=embed)
@@ -256,3 +267,4 @@ async def demarrer_reception(bot):
     )
 
     return runner
+
