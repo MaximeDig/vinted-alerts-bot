@@ -229,7 +229,7 @@ async def configurer_client(
         f"Configuration enregistrée ! Les annonces seront envoyées dans {salon.mention}.",
         ephemeral=True,
     )
-    # =====================================
+# =====================================
 # GENERER UNE CLE D'ACCES
 # =====================================
 
@@ -327,6 +327,7 @@ async def installer(interaction: discord.Interaction):
     )
 
 
+
 # =====================================
 # TESTER ET CLASSER UNE ANNONCE
 # =====================================
@@ -343,7 +344,6 @@ async def installer(interaction: discord.Interaction):
     lien="Lien HTTP ou HTTPS de l'annonce",
     taille="Taille de l'article",
     etat="État de l'article",
-    prix_ttc="Prix total TTC facultatif",
 )
 async def tester_annonce(
     interaction: discord.Interaction,
@@ -354,7 +354,6 @@ async def tester_annonce(
     lien: str,
     taille: str = "Non précisée",
     etat: str = "Non précisé",
-    prix_ttc: Optional[float] = None,
 ):
     if interaction.guild is None:
         await interaction.response.send_message(
@@ -366,13 +365,6 @@ async def tester_annonce(
     if prix <= 0 or reference <= 0:
         await interaction.response.send_message(
             "Les prix doivent être supérieurs à zéro.",
-            ephemeral=True,
-        )
-        return
-
-    if prix_ttc is not None and prix_ttc <= 0:
-        await interaction.response.send_message(
-            "Le prix TTC doit être supérieur à zéro.",
             ephemeral=True,
         )
         return
@@ -407,10 +399,12 @@ async def tester_annonce(
         )
         return
 
+    # Calcul de l'écart de prix
     ecart = ((prix - reference) / reference) * 100
 
     if abs(ecart) >= SEUIL:
         destination = SALON_ANALYSE
+
         if ecart < 0:
             statut = "🔻 PRIX BIEN EN DESSOUS DE LA RÉFÉRENCE"
         else:
@@ -418,7 +412,13 @@ async def tester_annonce(
     else:
         destination = salon_marque
         statut = "✅ PRIX COHÉRENT"
-        channel = await trouver_salon(interaction.guild, destination)
+
+    # Recherche du salon, quel que soit le classement
+    channel = await trouver_salon(
+        interaction.guild,
+        destination,
+    )
+
     if channel is None:
         await interaction.response.send_message(
             f"Le salon #{destination} est introuvable. Lance /installer.",
@@ -426,10 +426,13 @@ async def tester_annonce(
         )
         return
 
-    if prix_ttc is not None:
-        prix_affiche = f"{prix:.2f} € | ≈ {prix_ttc:.2f} € (TTC)"
-    else:
-        prix_affiche = f"{prix:.2f} €"
+    # Estimation automatique : prix affiché + 13 %
+    prix_ttc_estime = prix * 1.13
+
+    prix_affiche = (
+        f"{prix:.2f} € | ≈ {prix_ttc_estime:.2f} € "
+        "(TTC estimé)"
+    ).replace(".", ",")
 
     embed = discord.Embed(
         title=f"VINTED ALERT - {marque.upper()}",
@@ -442,18 +445,29 @@ async def tester_annonce(
         ),
     )
 
-    embed.add_field(name="🏷️ Marque", value=marque, inline=False)
-    embed.add_field(name="📏 Taille", value=taille, inline=False)
-    embed.add_field(name="💎 État", value=etat, inline=False)
-    embed.add_field(name="💰 Prix", value=prix_affiche, inline=False)
+    embed.add_field(
+        name="🏷️ Marque",
+        value=marque,
+        inline=False,
+    )
+    embed.add_field(
+        name="📏 Taille",
+        value=taille,
+        inline=False,
+    )
+    embed.add_field(
+        name="💎 État",
+        value=etat,
+        inline=False,
+    )
+    embed.add_field(
+        name="💰 Prix",
+        value=prix_affiche,
+        inline=False,
+    )
 
     embed.set_footer(
         text="Vinted Bot® | Alertes & analyse des annonces"
-    )
-
-    await interaction.response.send_message(
-        f"Annonce classée dans #{destination}.",
-        ephemeral=True,
     )
 
     message = await channel.send(embed=embed)
@@ -476,10 +490,14 @@ async def tester_annonce(
     )
     db.commit()
 
+    await interaction.response.send_message(
+        f"Annonce classée dans #{destination}.",
+        ephemeral=True,
+    )
+
     if destination == SALON_ANALYSE:
         await message.add_reaction("✅")
         await message.add_reaction("❌")
-
 
 # =====================================
 # ENREGISTRER LES REACTIONS
