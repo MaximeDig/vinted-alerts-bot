@@ -11,13 +11,14 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
     prixElements.forEach((element) => {
         const testId = element.getAttribute("data-testid");
-        const correspondance = testId.match(
+        const matchId = testId.match(
             /^product-item-id-(\d+)--price-text$/
         );
 
-        if (!correspondance) return;
+        if (!matchId) return;
 
-        const id = correspondance[1];
+        const id = matchId[1];
+        if (dejaVues.has(id)) return;
 
         const prixTexte = element.textContent
             .replace(/\u00a0/g, " ")
@@ -33,22 +34,21 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
         if (!Number.isFinite(prix)) return;
 
-        const lien = document.querySelector(
-            `a[href*="/items/${id}"]`
-        );
+        const lien = [...document.querySelectorAll('a[href*="/items/"]')]
+            .find(a => a.href.includes(`/items/${id}-`));
 
-        if (!lien || dejaVues.has(id)) return;
+        if (!lien) return;
 
         dejaVues.add(id);
 
         const bloc = element.closest('[data-testid^="product-item-"]')
-            || lien.parentElement;
+            || element.parentElement;
 
         const image = bloc?.querySelector("img");
 
         annonces.push({
-            titre: bloc?.innerText?.slice(0, 150) || "Sans titre",
-            prix: prix,
+            titre: bloc?.innerText?.slice(0, 150) || "Annonce Vinted",
+            prix,
             lien: lien.href,
             image: image?.src || null
         });
