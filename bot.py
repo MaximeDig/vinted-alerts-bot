@@ -324,7 +324,7 @@ async def tester_annonce(
         )
         return
 
-    nom = marque.lower().strip()
+nom = marque.lower().strip()
 salon = MARQUES.get(nom)
 
 if salon is None:
