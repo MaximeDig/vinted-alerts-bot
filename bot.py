@@ -324,11 +324,12 @@ async def tester_annonce(
         )
         return
 
-nom = marque.lower().strip()
-salon = MARQUES.get(nom)
 
-if salon is None:
-    salon = "prix-a-analyser"
+    nom = marque.lower().strip()
+    salon = MARQUES.get(nom)
+
+    if salon is None:
+        salon = "prix-a-analyser"
 
     pays_normalise = pays.lower().strip()
 
@@ -360,7 +361,6 @@ if salon is None:
             statut = "🔻 PRIX BIEN EN DESSOUS DE LA RÉFÉRENCE"
         else:
             statut = "🔺 PRIX BIEN AU-DESSUS DE LA RÉFÉRENCE"
-
     else:
         destination = salon
         statut = "✅ PRIX COHÉRENT"
@@ -392,19 +392,16 @@ if salon is None:
         value=f"{prix:.2f} €",
         inline=True
     )
-
     embed.add_field(
         name="Référence estimée",
         value=f"{reference:.2f} €",
         inline=True
     )
-
     embed.add_field(
         name="Écart",
         value=f"{ecart:+.1f} %",
         inline=True
     )
-
     embed.add_field(name="Pays", value=pays, inline=True)
     embed.add_field(name="Marque", value=marque, inline=True)
 
@@ -440,6 +437,7 @@ if salon is None:
     if destination == "prix-a-analyser":
         await message.add_reaction("✅")
         await message.add_reaction("❌")
+
 
 
 @bot.event
