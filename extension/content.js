@@ -21,7 +21,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         const id = matchId[1];
         if (dejaVues.has(id)) return;
 
-        const prixTexte = element.textContent
+       const prixTexte = element.innerText || element.textContent || "";
             .replace(/\u00a0/g, " ")
             .trim();
 
