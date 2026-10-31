@@ -1,20 +1,16 @@
-
 const serverUrlInput = document.getElementById("serverUrl");
 const apiKeyInput = document.getElementById("apiKey");
 const statut = document.getElementById("statut");
 const resultats = document.getElementById("resultats");
+const boutonEnvoyer = document.getElementById("envoyer");
 
-// Charger la configuration enregistrée
+let annoncesDetectees = [];
+
 chrome.storage.local.get(
     ["serverUrl", "apiKey"],
     (config) => {
-        if (config.serverUrl) {
-            serverUrlInput.value = config.serverUrl;
-        }
-
-        if (config.apiKey) {
-            apiKeyInput.value = config.apiKey;
-        }
+        if (config.serverUrl) serverUrlInput.value = config.serverUrl;
+        if (config.apiKey) apiKeyInput.value = config.apiKey;
     }
 );
 
@@ -33,11 +29,7 @@ document.getElementById("sauvegarder").addEventListener("click", async () => {
         return;
     }
 
-    await chrome.storage.local.set({
-        serverUrl,
-        apiKey
-    });
-
+    await chrome.storage.local.set({ serverUrl, apiKey });
     statut.textContent = "Configuration enregistrée !";
 });
 
@@ -45,6 +37,8 @@ document.getElementById("sauvegarder").addEventListener("click", async () => {
 document.getElementById("scanner").addEventListener("click", async () => {
     statut.textContent = "Recherche des annonces...";
     resultats.replaceChildren();
+    annoncesDetectees = [];
+    boutonEnvoyer.disabled = true;
 
     const [onglet] = await chrome.tabs.query({
         active: true,
@@ -65,17 +59,17 @@ document.getElementById("scanner").addEventListener("click", async () => {
                 return;
             }
 
-            const annonces = reponse?.annonces || [];
-            statut.textContent = annonces.length + " annonce(s) trouvée(s).";
+            annoncesDetectees = reponse?.annonces || [];
+            statut.textContent = annoncesDetectees.length + " annonce(s) trouvée(s).";
 
-            annonces.forEach((annonce) => {
+            annoncesDetectees.forEach((annonce) => {
                 const bloc = document.createElement("div");
                 const titre = document.createElement("p");
                 const prix = document.createElement("p");
                 const lien = document.createElement("a");
 
                 titre.textContent = annonce.titre || "Sans titre";
-                prix.textContent = annonce.prix || "Prix inconnu";
+                prix.textContent = annonce.prix + " €";
 
                 lien.textContent = "Voir l'annonce";
                 lien.href = annonce.lien;
@@ -93,7 +87,74 @@ document.getElementById("scanner").addEventListener("click", async () => {
                 bloc.append(titre, prix, lien);
                 resultats.appendChild(bloc);
             });
+
+            boutonEnvoyer.disabled = annoncesDetectees.length === 0;
         }
     );
+});
+
+// Envoyer manuellement les annonces à Discord
+boutonEnvoyer.addEventListener("click", async () => {
+    const config = await chrome.storage.local.get(["serverUrl", "apiKey"]);
+
+    if (!config.serverUrl || !config.apiKey) {
+        statut.textContent = "Enregistre d'abord ta configuration.";
+        return;
+    }
+
+    if (annoncesDetectees.length === 0) {
+        statut.textContent = "Aucune annonce à envoyer.";
+        return;
+    }
+
+    boutonEnvoyer.disabled = true;
+    let envoyees = 0;
+    let erreurs = 0;
+
+    const marques = [
+        "the north face", "ralph lauren", "tommy hilfiger",
+        "stone island", "new balance", "nike jordan",
+        "hugo boss", "carhartt", "patagonia", "supreme",
+        "stussy", "adidas", "lacoste", "burberry",
+        "dior", "gucci", "prada", "levis", "dickies",
+        "arcteryx", "asics", "salomon", "nike"
+    ];
+
+    for (const annonce of annoncesDetectees) {
+        const titre = annonce.titre || "Annonce Vinted";
+        const texte = titre.toLowerCase();
+        const marque = marques.find(m => texte.includes(m)) || "Non précisée";
+
+        try {
+            const response = await fetch(config.serverUrl, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${config.apiKey}`
+                },
+                body: JSON.stringify({
+                    titre,
+                    marque,
+                    prix: Number(annonce.prix),
+                    lien: annonce.lien,
+                    image: annonce.image
+                })
+            });
+
+            if (response.ok) {
+                envoyees++;
+            } else {
+                erreurs++;
+            }
+        } catch (error) {
+            erreurs++;
+        }
+    }
+
+    statut.textContent =
+        `${envoyees} annonce(s) envoyée(s), ${erreurs} erreur(s).`;
+
+    // Évite de renvoyer accidentellement le même lot.
+    annoncesDetectees = [];
 });
 
