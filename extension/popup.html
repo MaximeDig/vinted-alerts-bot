@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -7,8 +8,34 @@
 <body>
     <h2>Vinted Discord Alerts</h2>
 
+    <h3>Configuration du serveur</h3>
+
+    <label for="serverUrl">Adresse de réception :</label>
+    <input
+        id="serverUrl"
+        type="url"
+        value="https://kiqnfbglxp.apps.bot-hosting.cloud/annonce"
+        placeholder="https://ton-serveur/annonce"
+    >
+
+    <br><br>
+
+    <label for="apiKey">Clé API :</label>
+    <input
+        id="apiKey"
+        type="password"
+        placeholder="Colle ta clé API ici"
+    >
+
+    <br><br>
+
+    <button id="sauvegarder">Enregistrer la configuration</button>
+
+    <hr>
+
     <button id="scanner">Scanner les annonces</button>
-<div id="resultats"></div>
+
+    <div id="resultats"></div>
     <p id="statut">En attente...</p>
 
     <script src="popup.js"></script>
