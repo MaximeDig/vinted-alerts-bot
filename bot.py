@@ -71,29 +71,29 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 SEUIL = 30
 
 MARQUES = {
-    "nike": "nike",
-    "adidas": "adidas",
-    "stussy": "stussy",
-    "supreme": "supreme",
-    "carhartt": "carhartt",
-    "ralph lauren": "ralph-lauren",
-    "lacoste": "lacoste",
-    "tommy hilfiger": "tommy-hilfiger",
-    "hugo boss": "hugo-boss",
-    "stone island": "stone-island",
-    "burberry": "burberry",
-    "dior": "dior",
-    "gucci": "gucci",
-    "prada": "prada",
-    "levis": "levis",
-    "dickies": "dickies",
-    "patagonia": "patagonia",
-    "the north face": "the-north-face",
-    "arcteryx": "arcteryx",
-    "nike jordan": "nike-jordan",
-    "new balance": "new-balance",
-    "asics": "asics",
-    "salomon": "salomon"
+    "nike": "🇺🇸︲nike",
+    "adidas": "🇩🇪︲adidas",
+    "stussy": "🇺🇸︲stussy",
+    "supreme": "🇺🇸︲supreme",
+    "carhartt": "🇺🇸︲carhartt",
+    "ralph lauren": "🇺🇸︲ralph-lauren",
+    "lacoste": "🇫🇷︲lacoste",
+    "tommy hilfiger": "🇺🇸︲tommy-hilfiger",
+    "hugo boss": "🇩🇪︲hugo-boss",
+    "stone island": "🇮🇹︲stone-island",
+    "burberry": "🇬🇧︲burberry",
+    "dior": "🇫🇷︲dior",
+    "gucci": "🇮🇹︲gucci",
+    "prada": "🇮🇹︲prada",
+    "levis": "🇺🇸︲levis",
+    "dickies": "🇺🇸︲dickies",
+    "patagonia": "🇺🇸︲patagonia",
+    "the north face": "🇺🇸︲the-north-face",
+    "arcteryx": "🇨🇦︲arcteryx",
+    "nike jordan": "🇺🇸︲nike-jordan",
+    "new balance": "🇺🇸︲new-balance",
+    "asics": "🇯🇵︲asics",
+    "salomon": "🇫🇷︲salomon"
 }
 
 PAYS_AUTORISES = [
@@ -108,22 +108,39 @@ PAYS_AUTORISES = [
 
 SALONS = {
     "STREETWEAR": [
-        "nike", "adidas", "stussy", "supreme", "carhartt"
+        "🇺🇸︲nike",
+        "🇩🇪︲adidas",
+        "🇺🇸︲stussy",
+        "🇺🇸︲supreme",
+        "🇺🇸︲carhartt"
     ],
     "PREMIUM": [
-        "ralph-lauren", "lacoste", "tommy-hilfiger", "hugo-boss"
+        "🇺🇸︲ralph-lauren",
+        "🇫🇷︲lacoste",
+        "🇺🇸︲tommy-hilfiger",
+        "🇩🇪︲hugo-boss"
     ],
     "LUXE": [
-        "stone-island", "burberry", "dior", "gucci", "prada"
+        "🇮🇹︲stone-island",
+        "🇬🇧︲burberry",
+        "🇫🇷︲dior",
+        "🇮🇹︲gucci",
+        "🇮🇹︲prada"
     ],
     "VINTAGE-OUTDOOR": [
-        "levis", "dickies", "patagonia", "the-north-face", "arcteryx"
+        "🇺🇸︲levis",
+        "🇺🇸︲dickies",
+        "🇺🇸︲patagonia",
+        "🇺🇸︲the-north-face",
+        "🇨🇦︲arcteryx"
     ],
     "SNEAKERS": [
-        "nike-jordan", "new-balance", "asics", "salomon"
+        "🇺🇸︲nike-jordan",
+        "🇺🇸︲new-balance",
+        "🇯🇵︲asics",
+        "🇫🇷︲salomon"
     ]
 }
-
 
 async def trouver_salon(guild, nom):
     return discord.utils.get(guild.text_channels, name=nom)
